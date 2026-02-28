@@ -486,6 +486,28 @@ class Playing(ABC):
         "episode_number",
         "content_identifier",
         "itunes_store_identifier",
+        "subtitle",
+        "content_rating",
+        "is_streaming",
+        "is_live",
+        "playback_rate",
+        "collection_identifier",
+        "service_identifier",
+        "brand_identifier",
+        "media_sub_type",
+        "release_date",
+        "director_name",
+        "episode_type",
+        "artwork_url",
+        "deep_episode_title",
+        "deep_season_number",
+        "deep_episode_number",
+        "deep_content_rating",
+        "deep_genre",
+        "deep_program_id",
+        "raw_nowplaying_info",
+        "raw_user_info",
+        "raw_collection_info",
     ]
 
     def __init__(  # pylint: disable=too-many-locals
@@ -506,6 +528,28 @@ class Playing(ABC):
         episode_number: Optional[int] = None,
         content_identifier: Optional[str] = None,
         itunes_store_identifier: Optional[int] = None,
+        subtitle: Optional[str] = None,
+        content_rating: Optional[str] = None,
+        is_streaming: Optional[bool] = None,
+        is_live: Optional[bool] = None,
+        playback_rate: Optional[float] = None,
+        collection_identifier: Optional[str] = None,
+        service_identifier: Optional[str] = None,
+        brand_identifier: Optional[str] = None,
+        media_sub_type: Optional[int] = None,
+        release_date: Optional[float] = None,
+        director_name: Optional[str] = None,
+        episode_type: Optional[int] = None,
+        artwork_url: Optional[str] = None,
+        deep_episode_title: Optional[str] = None,
+        deep_season_number: Optional[int] = None,
+        deep_episode_number: Optional[int] = None,
+        deep_content_rating: Optional[str] = None,
+        deep_genre: Optional[str] = None,
+        deep_program_id: Optional[str] = None,
+        raw_nowplaying_info: Optional[dict] = None,
+        raw_user_info: Optional[dict] = None,
+        raw_collection_info: Optional[dict] = None,
     ) -> None:
         """Initialize a new Playing instance."""
         self._itunes_store_identifier = None
@@ -525,6 +569,28 @@ class Playing(ABC):
         self._episode_number = episode_number
         self._content_identifier = content_identifier
         self._itunes_store_identifier = itunes_store_identifier
+        self._subtitle = subtitle
+        self._content_rating = content_rating
+        self._is_streaming = is_streaming
+        self._is_live = is_live
+        self._playback_rate = playback_rate
+        self._collection_identifier = collection_identifier
+        self._service_identifier = service_identifier
+        self._brand_identifier = brand_identifier
+        self._media_sub_type = media_sub_type
+        self._release_date = release_date
+        self._director_name = director_name
+        self._episode_type = episode_type
+        self._artwork_url = artwork_url
+        self._deep_episode_title = deep_episode_title
+        self._deep_season_number = deep_season_number
+        self._deep_episode_number = deep_episode_number
+        self._deep_content_rating = deep_content_rating
+        self._deep_genre = deep_genre
+        self._deep_program_id = deep_program_id
+        self._raw_nowplaying_info = raw_nowplaying_info
+        self._raw_user_info = raw_user_info
+        self._raw_collection_info = raw_collection_info
 
         self._post_process()
 
@@ -698,6 +764,116 @@ class Playing(ABC):
     def itunes_store_identifier(self) -> Optional[int]:
         """Itunes Store identifier."""
         return self._itunes_store_identifier
+
+    @property
+    def subtitle(self) -> Optional[str]:
+        """Subtitle of the current media."""
+        return self._subtitle
+
+    @property
+    def content_rating(self) -> Optional[str]:
+        """Localized content rating, e.g. TV-MA, PG-13."""
+        return self._content_rating
+
+    @property
+    def is_streaming(self) -> Optional[bool]:
+        """Whether the content is streaming."""
+        return self._is_streaming
+
+    @property
+    def is_live(self) -> Optional[bool]:
+        """Whether the content is always-live."""
+        return self._is_live
+
+    @property
+    def playback_rate(self) -> Optional[float]:
+        """Playback rate (0=paused, 1=normal, 2=2x)."""
+        return self._playback_rate
+
+    @property
+    def collection_identifier(self) -> Optional[str]:
+        """Collection identifier grouping episodes into a series."""
+        return self._collection_identifier
+
+    @property
+    def service_identifier(self) -> Optional[str]:
+        """Streaming service identifier string."""
+        return self._service_identifier
+
+    @property
+    def brand_identifier(self) -> Optional[str]:
+        """Brand or channel identifier."""
+        return self._brand_identifier
+
+    @property
+    def media_sub_type(self) -> Optional[int]:
+        """Media sub-type (Music, Podcast, AudioBook, etc.)."""
+        return self._media_sub_type
+
+    @property
+    def release_date(self) -> Optional[float]:
+        """Content release date as timestamp."""
+        return self._release_date
+
+    @property
+    def director_name(self) -> Optional[str]:
+        """Director name (movies)."""
+        return self._director_name
+
+    @property
+    def episode_type(self) -> Optional[int]:
+        """Episode type flag."""
+        return self._episode_type
+
+    @property
+    def artwork_url(self) -> Optional[str]:
+        """Direct URL to artwork image."""
+        return self._artwork_url
+
+    @property
+    def deep_episode_title(self) -> Optional[str]:
+        """Episode title from nowPlayingInfoData plist."""
+        return self._deep_episode_title
+
+    @property
+    def deep_season_number(self) -> Optional[int]:
+        """Season number from nowPlayingInfoData plist."""
+        return self._deep_season_number
+
+    @property
+    def deep_episode_number(self) -> Optional[int]:
+        """Episode number from nowPlayingInfoData plist."""
+        return self._deep_episode_number
+
+    @property
+    def deep_content_rating(self) -> Optional[str]:
+        """Content rating from nowPlayingInfoData plist (e.g. TV-MA)."""
+        return self._deep_content_rating
+
+    @property
+    def deep_genre(self) -> Optional[str]:
+        """Genre from nowPlayingInfoData plist."""
+        return self._deep_genre
+
+    @property
+    def deep_program_id(self) -> Optional[str]:
+        """Program ID from nowPlayingInfoData plist."""
+        return self._deep_program_id
+
+    @property
+    def raw_nowplaying_info(self) -> Optional[dict]:
+        """Full parsed nowPlayingInfoData plist dict."""
+        return self._raw_nowplaying_info
+
+    @property
+    def raw_user_info(self) -> Optional[dict]:
+        """Full parsed userInfoData plist dict."""
+        return self._raw_user_info
+
+    @property
+    def raw_collection_info(self) -> Optional[dict]:
+        """Full parsed collectionInfoData plist dict."""
+        return self._raw_collection_info
 
 
 class App:

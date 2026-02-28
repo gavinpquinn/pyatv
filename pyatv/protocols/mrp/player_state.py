@@ -3,13 +3,80 @@
 from itertools import chain
 import logging
 import math
-from typing import Dict, List, Optional
+import plistlib
+from typing import Any, Dict, List, Optional
 import weakref
 
 from pyatv.protocols.mrp import protobuf as pb
 from pyatv.protocols.mrp.protocol import MrpProtocol
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _unarchive_nskeyed(data: bytes) -> Optional[Dict[str, Any]]:
+    """Unarchive an NSKeyedArchiver binary plist into a plain dict.
+
+    Apple encodes NSDictionary objects using NSKeyedArchiver format,
+    which wraps the actual key-value pairs in $archiver/$objects/$top
+    structure. This function unwraps that into a simple Python dict.
+    """
+    try:
+        plist = plistlib.loads(data)
+    except Exception:
+        return None
+
+    if not isinstance(plist, dict):
+        return None
+
+    # If it's already a plain dict (not NSKeyedArchiver), return as-is
+    archiver = plist.get("$archiver")
+    if archiver != "NSKeyedArchiver":
+        return plist
+
+    objects = plist.get("$objects", [])
+    top = plist.get("$top", {})
+    if not objects or not top:
+        return None
+
+    # Get the root object reference
+    root_ref = top.get("root")
+    if root_ref is None:
+        for v in top.values():
+            if hasattr(v, "integer"):
+                root_ref = v
+                break
+            elif isinstance(v, int):
+                root_ref = v
+                break
+        if root_ref is None:
+            return None
+
+    root_uid = int(root_ref)
+    if root_uid >= len(objects):
+        return None
+
+    root_obj = objects[root_uid]
+    if not isinstance(root_obj, dict):
+        return None
+
+    # Resolve the NSDictionary keys and values
+    ns_keys = root_obj.get("NS.keys", [])
+    ns_values = root_obj.get("NS.objects", [])
+
+    if not ns_keys or not ns_values or len(ns_keys) != len(ns_values):
+        return None
+
+    result = {}
+    for k_ref, v_ref in zip(ns_keys, ns_values):
+        k_uid = int(k_ref)
+        v_uid = int(v_ref)
+        if k_uid < len(objects) and v_uid < len(objects):
+            key = objects[k_uid]
+            value = objects[v_uid]
+            if isinstance(key, str) and value != "$null":
+                result[key] = value
+
+    return result if result else None
 
 DEFAULT_PLAYER_ID = "MediaRemote-DefaultPlayer"
 
@@ -89,6 +156,43 @@ class PlayerState:
         if metadata and metadata.HasField(field):
             return getattr(metadata, field)
         return None
+
+    def _parsed_plist(self, proto_field: str) -> Optional[Dict[str, Any]]:
+        """Parse and cache a binary plist from a protobuf bytes field."""
+        cache_key = f"_plist_cache_{proto_field}"
+        item_id = self.item_identifier
+
+        # Check cache: (item_identifier, parsed_dict)
+        cached = getattr(self, cache_key, None)
+        if cached is not None and cached[0] == item_id:
+            return cached[1]
+
+        raw = self.metadata_field(proto_field)
+        if raw is None:
+            result = None
+        else:
+            result = _unarchive_nskeyed(raw)
+
+        setattr(self, cache_key, (item_id, result))
+        return result
+
+    def nowplaying_info_field(self, key: str) -> Any:
+        """Return a value from the parsed nowPlayingInfoData plist."""
+        parsed = self._parsed_plist("nowPlayingInfoData")
+        if parsed:
+            return parsed.get(key)
+        return None
+
+    def parsed_plist_field(self, proto_field: str, key: str) -> Any:
+        """Return a value from any parsed binary plist protobuf field."""
+        parsed = self._parsed_plist(proto_field)
+        if parsed:
+            return parsed.get(key)
+        return None
+
+    def raw_plist(self, proto_field: str) -> Optional[Dict[str, Any]]:
+        """Return the full parsed plist dict for a protobuf bytes field."""
+        return self._parsed_plist(proto_field)
 
     def command_info(self, command):
         """Return supported command info."""

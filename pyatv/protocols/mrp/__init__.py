@@ -273,6 +273,86 @@ def build_playing_instance(  # pylint: disable=too-many-locals
         """Itunes Store identifier."""
         return state.metadata_field("iTunesStoreIdentifier")
 
+    def subtitle() -> Optional[str]:
+        return state.metadata_field("subtitle")
+
+    def content_rating() -> Optional[str]:
+        return state.metadata_field("localizedContentRating")
+
+    def is_streaming() -> Optional[bool]:
+        return state.metadata_field("isStreamingContent")
+
+    def is_live() -> Optional[bool]:
+        return state.metadata_field("isAlwaysLive")
+
+    def playback_rate_val() -> Optional[float]:
+        return state.metadata_field("playbackRate")
+
+    def collection_identifier() -> Optional[str]:
+        return state.metadata_field("collectionIdentifier")
+
+    def service_identifier() -> Optional[str]:
+        return state.metadata_field("serviceIdentifier")
+
+    def brand_identifier() -> Optional[str]:
+        return state.metadata_field("brandIdentifier")
+
+    def media_sub_type() -> Optional[int]:
+        val = state.metadata_field("mediaSubType")
+        return int(val) if val is not None else None
+
+    def release_date() -> Optional[float]:
+        return state.metadata_field("releaseDate")
+
+    def director_name() -> Optional[str]:
+        return state.metadata_field("directorName")
+
+    def episode_type() -> Optional[int]:
+        return state.metadata_field("episodeType")
+
+    def artwork_url() -> Optional[str]:
+        return state.metadata_field("artworkURL")
+
+    def deep_episode_title() -> Optional[str]:
+        return state.nowplaying_info_field("com.apple.hls.episode-title")
+
+    def deep_season_number() -> Optional[int]:
+        val = state.nowplaying_info_field("com.apple.avkit.seasonNumber")
+        if val is not None:
+            try:
+                return int(val)
+            except (ValueError, TypeError):
+                pass
+        return None
+
+    def deep_episode_number() -> Optional[int]:
+        val = state.nowplaying_info_field("com.apple.avkit.episodeNumber")
+        if val is not None:
+            try:
+                return int(val)
+            except (ValueError, TypeError):
+                pass
+        return None
+
+    def deep_content_rating() -> Optional[str]:
+        return state.nowplaying_info_field("com.apple.hls.rating-display-name")
+
+    def deep_genre() -> Optional[str]:
+        return state.nowplaying_info_field("com.apple.hls.genre")
+
+    def deep_program_id() -> Optional[str]:
+        val = state.nowplaying_info_field("TVRProgramID")
+        return str(val) if val is not None else None
+
+    def raw_nowplaying_info() -> Optional[dict]:
+        return state.raw_plist("nowPlayingInfoData")
+
+    def raw_user_info() -> Optional[dict]:
+        return state.raw_plist("userInfoData")
+
+    def raw_collection_info() -> Optional[dict]:
+        return state.raw_plist("collectionInfoData")
+
     return Playing(
         media_type=media_type(),
         device_state=device_state(),
@@ -290,6 +370,28 @@ def build_playing_instance(  # pylint: disable=too-many-locals
         episode_number=episode_number(),
         content_identifier=content_identifier(),
         itunes_store_identifier=itunes_store_identifier(),
+        subtitle=subtitle(),
+        content_rating=content_rating(),
+        is_streaming=is_streaming(),
+        is_live=is_live(),
+        playback_rate=playback_rate_val(),
+        collection_identifier=collection_identifier(),
+        service_identifier=service_identifier(),
+        brand_identifier=brand_identifier(),
+        media_sub_type=media_sub_type(),
+        release_date=release_date(),
+        director_name=director_name(),
+        episode_type=episode_type(),
+        artwork_url=artwork_url(),
+        deep_episode_title=deep_episode_title(),
+        deep_season_number=deep_season_number(),
+        deep_episode_number=deep_episode_number(),
+        deep_content_rating=deep_content_rating(),
+        deep_genre=deep_genre(),
+        deep_program_id=deep_program_id(),
+        raw_nowplaying_info=raw_nowplaying_info(),
+        raw_user_info=raw_user_info(),
+        raw_collection_info=raw_collection_info(),
     )
 
 
