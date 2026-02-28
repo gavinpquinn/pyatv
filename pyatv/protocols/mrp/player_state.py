@@ -238,10 +238,32 @@ class PlayerState:
         return result
 
     def nowplaying_info_field(self, key: str) -> Any:
-        """Return a value from the parsed nowPlayingInfoData plist."""
+        """Return a value from the parsed nowPlayingInfoData plist.
+
+        Searches the top-level dict first, then looks inside
+        TVRAdditionalMetadata (where Apple TV app nests episode info).
+        Handles mdta/ and avkt/ prefixed variants of the key.
+        """
         parsed = self._parsed_plist("nowPlayingInfoData")
-        if parsed:
-            return parsed.get(key)
+        if not parsed:
+            return None
+
+        # Direct top-level lookup
+        val = parsed.get(key)
+        if val is not None:
+            return val
+
+        # Search inside TVRAdditionalMetadata with prefix variants
+        tvr = parsed.get("TVRAdditionalMetadata")
+        if isinstance(tvr, dict):
+            val = tvr.get(key)
+            if val is not None:
+                return val
+            for prefix in ("mdta/", "avkt/"):
+                val = tvr.get(prefix + key)
+                if val is not None:
+                    return val
+
         return None
 
     def parsed_plist_field(self, proto_field: str, key: str) -> Any:
