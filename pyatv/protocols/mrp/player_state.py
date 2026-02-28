@@ -93,7 +93,34 @@ def _unarchive_nskeyed(data: bytes) -> Optional[Dict[str, Any]]:
     if not isinstance(root_obj, dict):
         return None
 
-    # Resolve the NSDictionary keys and values
+    def _resolve_object(obj):
+        """Recursively resolve an object from the $objects array."""
+        if isinstance(obj, dict):
+            # Check if it's an NSDictionary with NS.keys/NS.objects
+            ns_keys = obj.get("NS.keys", [])
+            ns_values = obj.get("NS.objects", [])
+            if ns_keys and ns_values and len(ns_keys) == len(ns_values):
+                resolved = {}
+                for k_ref, v_ref in zip(ns_keys, ns_values):
+                    k_uid = int(k_ref)
+                    v_uid = int(v_ref)
+                    if k_uid < len(objects) and v_uid < len(objects):
+                        key = objects[k_uid]
+                        value = objects[v_uid]
+                        if isinstance(key, str) and value != "$null":
+                            resolved[key] = _resolve_object(value)
+                return resolved
+            # Check if it's an NSArray with NS.objects
+            ns_array = obj.get("NS.objects")
+            if ns_array is not None and "NS.keys" not in obj:
+                return [
+                    _resolve_object(objects[int(ref)])
+                    for ref in ns_array
+                    if int(ref) < len(objects)
+                ]
+        return obj
+
+    # Resolve the root NSDictionary
     ns_keys = root_obj.get("NS.keys", [])
     ns_values = root_obj.get("NS.objects", [])
 
@@ -108,7 +135,7 @@ def _unarchive_nskeyed(data: bytes) -> Optional[Dict[str, Any]]:
             key = objects[k_uid]
             value = objects[v_uid]
             if isinstance(key, str) and value != "$null":
-                result[key] = value
+                result[key] = _resolve_object(value)
 
     return result if result else None
 
