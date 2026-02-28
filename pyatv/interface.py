@@ -508,6 +508,14 @@ class Playing(ABC):
         "raw_nowplaying_info",
         "raw_user_info",
         "raw_collection_info",
+        "song_traits",
+        "album_traits",
+        "active_audio_format",
+        "preferred_audio_format",
+        "audio_route",
+        "active_format_justification",
+        "format_tier_preference",
+        "is_explicit",
     ]
 
     def __init__(  # pylint: disable=too-many-locals
@@ -550,6 +558,14 @@ class Playing(ABC):
         raw_nowplaying_info: Optional[dict] = None,
         raw_user_info: Optional[dict] = None,
         raw_collection_info: Optional[dict] = None,
+        song_traits: Optional[int] = None,
+        album_traits: Optional[int] = None,
+        active_audio_format: Optional[dict] = None,
+        preferred_audio_format: Optional[dict] = None,
+        audio_route: Optional[dict] = None,
+        active_format_justification: Optional[int] = None,
+        format_tier_preference: Optional[int] = None,
+        is_explicit: Optional[bool] = None,
     ) -> None:
         """Initialize a new Playing instance."""
         self._itunes_store_identifier = None
@@ -591,6 +607,14 @@ class Playing(ABC):
         self._raw_nowplaying_info = raw_nowplaying_info
         self._raw_user_info = raw_user_info
         self._raw_collection_info = raw_collection_info
+        self._song_traits = song_traits
+        self._album_traits = album_traits
+        self._active_audio_format = active_audio_format
+        self._preferred_audio_format = preferred_audio_format
+        self._audio_route = audio_route
+        self._active_format_justification = active_format_justification
+        self._format_tier_preference = format_tier_preference
+        self._is_explicit = is_explicit
 
         self._post_process()
 
@@ -874,6 +898,46 @@ class Playing(ABC):
     def raw_collection_info(self) -> Optional[dict]:
         """Full parsed collectionInfoData plist dict."""
         return self._raw_collection_info
+
+    @property
+    def song_traits(self) -> Optional[int]:
+        """Song traits bitmask (ADM=1, Lossless=2, HiRes=4, Spatial=8, Atmos=16, Surround=32)."""
+        return self._song_traits
+
+    @property
+    def album_traits(self) -> Optional[int]:
+        """Album traits bitmask (same values as song_traits)."""
+        return self._album_traits
+
+    @property
+    def active_audio_format(self) -> Optional[dict]:
+        """Active audio format dict (tier, bitrate, sampleRate, bitDepth, etc.)."""
+        return self._active_audio_format
+
+    @property
+    def preferred_audio_format(self) -> Optional[dict]:
+        """Preferred audio format dict (same structure as active_audio_format)."""
+        return self._preferred_audio_format
+
+    @property
+    def audio_route(self) -> Optional[dict]:
+        """Audio route dict (type, name, supportsSpatialization)."""
+        return self._audio_route
+
+    @property
+    def active_format_justification(self) -> Optional[int]:
+        """Why the active format differs from preferred (0=Unknown, 100=UserPref, 500=RouteIncompat, 1000=Bandwidth)."""
+        return self._active_format_justification
+
+    @property
+    def format_tier_preference(self) -> Optional[int]:
+        """User's format tier preference."""
+        return self._format_tier_preference
+
+    @property
+    def is_explicit(self) -> Optional[bool]:
+        """Whether content is marked as explicit."""
+        return self._is_explicit
 
 
 class App:

@@ -13,6 +13,40 @@ from pyatv.protocols.mrp.protocol import MrpProtocol
 _LOGGER = logging.getLogger(__name__)
 
 
+def _audio_format_to_dict(fmt) -> Optional[Dict[str, Any]]:
+    """Convert an AudioFormat protobuf message to a plain dict.
+
+    Only includes fields that are actually set on the message.
+    Returns None if no fields are set.
+    """
+    result = {}
+    for field in (
+        "tier", "bitrate", "sampleRate", "bitDepth", "codec",
+        "spatialized", "multiChannel", "channelLayout",
+        "audioChannelLayoutDescription",
+    ):
+        if fmt.HasField(field):
+            val = getattr(fmt, field)
+            result[field] = int(val) if field == "tier" else val
+    return result if result else None
+
+
+def _audio_route_to_dict(route) -> Optional[Dict[str, Any]]:
+    """Convert an AudioRoute protobuf message to a plain dict.
+
+    Only includes fields that are actually set on the message.
+    Returns None if no fields are set.
+    """
+    result = {}
+    if route.HasField("type"):
+        result["type"] = int(route.type)
+    if route.HasField("name"):
+        result["name"] = route.name
+    if route.HasField("supportsSpatialization"):
+        result["supportsSpatialization"] = route.supportsSpatialization
+    return result if result else None
+
+
 def _unarchive_nskeyed(data: bytes) -> Optional[Dict[str, Any]]:
     """Unarchive an NSKeyedArchiver binary plist into a plain dict.
 

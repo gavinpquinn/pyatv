@@ -61,7 +61,12 @@ from pyatv.interface import (
 from pyatv.protocols.mrp import messages, protobuf
 from pyatv.protocols.mrp.connection import AbstractMrpConnection, MrpConnection
 from pyatv.protocols.mrp.pairing import MrpPairingHandler
-from pyatv.protocols.mrp.player_state import PlayerState, PlayerStateManager
+from pyatv.protocols.mrp.player_state import (
+    PlayerState,
+    PlayerStateManager,
+    _audio_format_to_dict,
+    _audio_route_to_dict,
+)
 from pyatv.protocols.mrp.protobuf import CommandInfo_pb2
 from pyatv.protocols.mrp.protobuf import ContentItemMetadata as cim
 from pyatv.protocols.mrp.protobuf import PlaybackState
@@ -353,6 +358,37 @@ def build_playing_instance(  # pylint: disable=too-many-locals
     def raw_collection_info() -> Optional[dict]:
         return state.raw_plist("collectionInfoData")
 
+    def song_traits_val() -> Optional[int]:
+        val = state.metadata_field("songTraits")
+        return int(val) if val is not None else None
+
+    def album_traits_val() -> Optional[int]:
+        val = state.metadata_field("albumTraits")
+        return int(val) if val is not None else None
+
+    def active_audio_format_val() -> Optional[dict]:
+        fmt = state.metadata_field("activeFormat")
+        return _audio_format_to_dict(fmt) if fmt else None
+
+    def preferred_audio_format_val() -> Optional[dict]:
+        fmt = state.metadata_field("preferredFormat")
+        return _audio_format_to_dict(fmt) if fmt else None
+
+    def audio_route_val() -> Optional[dict]:
+        route = state.metadata_field("audioRoute")
+        return _audio_route_to_dict(route) if route else None
+
+    def active_format_justification_val() -> Optional[int]:
+        val = state.metadata_field("activeFormatJustification")
+        return int(val) if val is not None else None
+
+    def format_tier_preference_val() -> Optional[int]:
+        val = state.metadata_field("formatTierPreference")
+        return int(val) if val is not None else None
+
+    def is_explicit_val() -> Optional[bool]:
+        return state.metadata_field("isExplicitItem")
+
     return Playing(
         media_type=media_type(),
         device_state=device_state(),
@@ -392,6 +428,14 @@ def build_playing_instance(  # pylint: disable=too-many-locals
         raw_nowplaying_info=raw_nowplaying_info(),
         raw_user_info=raw_user_info(),
         raw_collection_info=raw_collection_info(),
+        song_traits=song_traits_val(),
+        album_traits=album_traits_val(),
+        active_audio_format=active_audio_format_val(),
+        preferred_audio_format=preferred_audio_format_val(),
+        audio_route=audio_route_val(),
+        active_format_justification=active_format_justification_val(),
+        format_tier_preference=format_tier_preference_val(),
+        is_explicit=is_explicit_val(),
     )
 
 
